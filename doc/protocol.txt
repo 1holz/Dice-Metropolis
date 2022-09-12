@@ -1,0 +1,32 @@
+Recieveable by server and client:
+
+{"type": "PING"}:
+Sends PONG back.
+
+{"type": "PONG"}:
+Outputs a connection confirmation.
+
+{"type": "ERROR", "msg": STR}:
+Indicates that the previous inquiry caused an error. With "msg" being a more
+detailed message.
+
+{"type": "CLOSE"}:
+Indicates that the other side will close the connection.
+
+
+
+Recieveable by server only:
+
+{"type": "NAME", "name": STR}:
+Sets the name of the player sending the package to "name".
+
+{"type": "REQ_PLAYERS"}:                                                    WIP
+Replies with list of player names.
+
+{"type": "REQ_CARDS", "source": STR}:                                       WIP
+Replies with the list of cards the source has. The source can be the name of a
+player of "BANK".
+
+
+
+Recieveable by client only:
