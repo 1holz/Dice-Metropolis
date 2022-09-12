@@ -1,4 +1,5 @@
 import card
+import dice
 import json
 import os
 import util
@@ -9,6 +10,16 @@ config = {}
 players = []
 landmarks = []
 cards = []
+
+def broadcast(msg):
+    util.out(msg)
+    for p in players:
+        p.print(msg)
+
+def close(player):
+    broadcast("Connection with " + player.name + " will be closed")
+    player.close()
+    players.remove(player)
 
 def load_config():
     global config
@@ -35,27 +46,41 @@ def reload_cards():
                     landmarks.append(new_card)
                 names.append(new_card.name)
 
+def transactions(activation_no):
+    broadcast(players[0].name + " rolled a " + str(activation_no))
+    active_player = players[0]
+    for p in players:
+        for c in p.cards:
+            if c.type == "Restaurants":
+                pass # check activation & execute
+    for p in players:
+        for c in p.cards:
+            if c.type != "Restaurants" and c.type != "Major Establishment":
+                pass # check activation & execute
+    for p in players:
+        for c in p.cards:
+            if c.type == "Major Establishment":
+                pass # check activation & execute
+
 def communicate(package, player):
     match package["type"]:
         case "PING":
-            player.connection.send({"type": "PONG"})
+            player.pong()
         case "PONG":
             util.out("Connection with player " + player.name + " confirmed")
         case "NAME":
             for p in players:
-                if "name" not in package or package["name"] == p.name or package["name"] == "BANK":
-                    player.connection.send({"type": "ERROR", "msg": "The name is already taken or \"BANK\" or not present."})
+                if "name" not in package or str(package["name"]) == p.name or package["name"] == "BANK":
+                    player.error("The name is already taken or \"BANK\" or not present.")
                     return 0
-            player.name = package["name"]
+            player.name = str(package["name"])
         case "ERROR":
             if "msg" in package:
-                util.out("ERROR from " + player.name + ": " + package["msg"])
+                util.out("ERROR from " + player.name + ": " + str(package["msg"]))
             else:
                 util.out("An unspecified ERROR occured with " + player.name)
         case "CLOSE":
-            util.out("Connection with " + player.name + " will be closed")
-            player.connection.close()
-            players.remove(player)
+            close(player)
         case _:
             util.out("Received package from " + player.name + " that couldn't be processed: " + package)
     return 0
@@ -86,13 +111,16 @@ def run():
         if len(players) == 0:
             break
         #                                   dice mode?
-        # roll dice
+        dice_roll = dice.roll_1()
         #                                   add 2?
-        # transactions
+        transactions(dice_roll)
         #                                   buy
         #                                   invest
-        # check win
-        # requeue players
+        if len(landmarks) == len(players[0].landmarks):
+            broadcast(players[0].name + " has won the game.")
+            close(players[0])
+        else:
+            players.append(players.pop(0))
 
 def finish():
     for p in players:

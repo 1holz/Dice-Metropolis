@@ -63,7 +63,7 @@ class Card:
         if self.start > 1 and self.icon == "tower":
             error(self.name, "start")
             self.start = 1
-        if self.availabel + self.start != 1 and self.icon == "tower":
+        if availabel + self.start != 1 and self.icon == "tower":
             error(self.name, "availabel")
             self.availabel = 1 - self.start
         self.availabel = self.availabel * player_amount

@@ -30,3 +30,9 @@ player of "BANK".
 
 
 Recieveable by client only:
+
+{"type": "PRINT", "msg": STR}:                                              WIP
+Outputs "msg".
+
+{"type": "ASK", "question": STR, "regex": STR}:                             WIP
+Ask a question. The answer must match the regex.
