@@ -117,7 +117,7 @@ def run():
         #                                   buy
         #                                   invest
         if len(landmarks) == len(players[0].landmarks):
-            broadcast(players[0].name + " has won the game.")
+            broadcast(players[0].name + " has won the game")
             close(players[0])
         else:
             players.append(players.pop(0))

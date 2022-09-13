@@ -2,8 +2,6 @@ import json
 import util
 from multiprocessing import Process
 from multiprocessing.connection import Client
-from queue import Queue
-from threading import Thread
 
 def get_connection():
     config = {}
@@ -38,6 +36,7 @@ def communicate(connection, package):
     return 0
 
 def start(conection):
+    util.setup_io()
     connection.send({"type": "NAME", "name": util.ask("Please enter your name: ", "^.*$")})
 
 def run(connection):
@@ -48,18 +47,15 @@ def run(connection):
                 pass
             case 1:
                 break
+        if util.in_queue.qsize() > 0:
+            input_str = in_queue.get()
 
 def finish(connection):
     connection.close()
 
-def console(queue):
-    pass
-
 if __name__ == '__main__':
-    queue = Queue()
-    thread = Thread(target = console, args =(queue, ), daemon = True)
-    connection = get_connection()
     util.out("Client start")
+    connection = get_connection()
     start(connection)
     run(connection)
     finish(connection)

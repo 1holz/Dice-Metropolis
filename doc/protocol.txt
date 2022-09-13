@@ -27,6 +27,9 @@ Replies with list of player names.
 Replies with the list of cards the source has. The source can be the name of a
 player of "BANK".
 
+{"type": "ANSWER", "question": STR, "answer": STR}:                         WIP
+Supplies the answer to a question.
+
 
 
 Recieveable by client only:
