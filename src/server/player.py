@@ -1,12 +1,14 @@
+import util
 from card import Card
 
 class Player:
     connection = None
     name = "Dummy0"
-    money = 3
+    money = 0
     cards = []
     landmarks = []
-    
+    flags = []
+
     def __init__(self, id, money, connection):
         self.name = "Dummy" + str(id)
         self.money = money
@@ -31,19 +33,25 @@ class Player:
         for c in self.cards:
             strings.append(c.gen_string())
         return strings
+    
+    def send(self, package):
+        try:
+            self.connection.send(package)
+        except:
+            util.out("Could not send " + str(package) + " to " + self.name)
 
     def pong(self):
-        self.connection.send({"type": "PONG"})
+        self.send({"type": "PONG"})
 
     def error(self, msg):
-        self.connection.send({"type": "ERROR", "msg": str(msg)})
+        self.send({"type": "ERROR", "msg": str(msg)})
 
     def close(self):
-        self.connection.send({"type": "CLOSE"})
+        self.send({"type": "CLOSE"})
         self.connection.close()
 
     def print(self, msg):
-        self.connection.send({"type": "PRINT", "msg": str(msg)})
+        self.send({"type": "PRINT", "msg": str(msg)})
 
-    def ask(self, question, regex):
-        self.connection.send({"type": "ASK", "question": question, "regex": regex})
+    #def ask(self, question, regex):
+    #    self.send({"type": "ASK", "question": question, "regex": regex})

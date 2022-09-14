@@ -19,7 +19,8 @@ The original game supports:
 - Major Establishment
 Custom ones can be added. When a player has build all Landmarks the player wins.
 Restaurants are executed first, Major Establishment last and all others in
-between. Landmarks aren't executed. Default is Secondary Industry.
+between. Landmarks aren't executed. Default is Secondary Industry. Landmarks can't
+be swaped, moved or get renovated.
 
 icon:
 The icon of the card as a string.

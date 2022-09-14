@@ -1,16 +1,62 @@
 import json
+import re
 import util
-from multiprocessing import Process
-from multiprocessing.connection import Client
+from multiprocessing import Process, Queue
+from multiprocessing.connection import Client as Connection
+from threading import Thread
 
 def get_connection():
     config = {}
     with open("config.json", "r") as file:
         config = json.loads(file.read())
     addr = (config["ip"], int(config["port"]))
-    return Client(addr, authkey=config["key"].encode("utf-8"))
+    return Connection(addr, authkey=config["key"].encode("utf-8"))
 
-def communicate(connection, package):
+def console(queue):
+    while True:
+        queue.put(util.inp())
+
+class Client:
+    connection = None
+    queue = Queue()
+    thread = Thread(target = console, args = (queue, ), daemon = True)
+
+    def __init__(self):
+        util.out("Client start")
+        self.connection = get_connection()
+        self.thread.start()
+
+    def start(self):
+        pass
+        #util.out("Please enter your name: ")
+        #pattern = re.compile("^.*$")
+        #answer = None
+        #while True:
+        #    if queue.qsize() <= 0:
+        #        continue
+        #    answer = queue.get()
+        #    if pattern.match(answer):
+        #        self.send(send. connection, "NAME:" + answer)
+        #        break
+        #    else:
+        #        util.out("Your name is invalid. Please try again.")
+
+    def run(self):
+        while True:
+            status_code = recieve(self.connection, self.connection.recv())
+            match status_code:
+                case 0:
+                    pass
+                case 1:
+                    break
+            if self.queue.qsize() > 0:
+                send(self.queue.get())
+
+    def finish(self):
+        self.connection.close()
+        util.out("Client shutdown")
+
+def recieve(connection, package):
     match package["type"]:
         case "PING":
             connection.send({"type": "PONG"})
@@ -35,28 +81,22 @@ def communicate(connection, package):
             util.out("Received package from " + player.name + " that couldn't be processed: " + package)
     return 0
 
-def start(conection):
-    util.setup_io()
-    connection.send({"type": "NAME", "name": util.ask("Please enter your name: ", "^.*$")})
+def send(connection, in_str):
+    pass
 
-def run(connection):
+def ask(question, regex):
+    pattern = re.compile(regex)
+    answer = None
     while True:
-        status_code = communicate(connection, connection.recv())
-        match status_code:
-            case 0:
-                pass
-            case 1:
-                break
-        if util.in_queue.qsize() > 0:
-            input_str = in_queue.get()
-
-def finish(connection):
-    connection.close()
+        util.out(question)
+        answer = util.inp()
+        if pattern.match(answer):
+            return answer
+        else:
+            out("Your answer was invalid. Please try again.")
 
 if __name__ == '__main__':
-    util.out("Client start")
-    connection = get_connection()
-    start(connection)
-    run(connection)
-    finish(connection)
-    util.out("Client shutdown")
+    client = Client()
+    client.start()
+    client.run()
+    client.finish()

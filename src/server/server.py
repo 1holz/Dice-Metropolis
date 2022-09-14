@@ -2,13 +2,14 @@ import card
 import dice
 import json
 import os
+import re
 import util
 from player import Player
 from multiprocessing.connection import Listener
 
 config = {}
 players = []
-landmarks = []
+landmark_amount = 0
 cards = []
 
 def broadcast(msg):
@@ -18,7 +19,10 @@ def broadcast(msg):
 
 def close(player):
     broadcast("Connection with " + player.name + " will be closed")
-    player.close()
+    try:
+        player.close()
+    except:
+        util.out(player.name + " has closed connection on its own.")
     players.remove(player)
 
 def load_config():
@@ -28,6 +32,7 @@ def load_config():
 
 def reload_cards():
     global cards
+    global landmark_amount
     cards = []
     names = []
     for (root, dirs, files) in os.walk('./cards/'):
@@ -43,8 +48,17 @@ def reload_cards():
                     continue
                 cards.append(new_card)
                 if new_card.type == "Landmark":
-                    landmarks.append(new_card)
+                    landmark_amount += 1
                 names.append(new_card.name)
+
+def gen_info():
+    info = []
+    info.append(("player_amount", "Player amount:      {}", len(players), ))
+    info.append(("Landmark amount:    ", landmark_amount, ))
+    info.append(("Cards:", ))
+    for c in self.cards:
+        info.append(c.gen_string())
+    return info
 
 def transactions(activation_no):
     broadcast(players[0].name + " rolled a " + str(activation_no))
@@ -69,10 +83,21 @@ def communicate(package, player):
         case "PONG":
             util.out("Connection with player " + player.name + " confirmed")
         case "NAME":
+            pattern = re.compile(regex)
+            if "name" not in package:
+                player.error("The name is not present.")
+            new_name = str(package["name"])
+            if new_name == "BANK":
+                player.error("The name is equal to BANK.")
+                return 0
+                return 0
             for p in players:
-                if "name" not in package or str(package["name"]) == p.name or package["name"] == "BANK":
-                    player.error("The name is already taken or \"BANK\" or not present.")
+                if new_name == p.name:
+                    player.error("The name " + new_name + " is already taken.")
                     return 0
+            if not re.compile("^.*$").match(new_name):
+                player.error("The name " + new_name + " contains illegal charcters")
+                return 0
             player.name = str(package["name"])
         case "ERROR":
             if "msg" in package:
@@ -97,12 +122,21 @@ def start():
     reload_cards()
     for c in cards:
         for p in players:
-            p.receive_card(c)
+            for i in range(c.start):
+                p.receive_card(c)
 
 def run():
+    global landmark_amount
     while True:
         for p in players[:]:
-            status_code = communicate(p.connection.recv(), p)
+            status_code = 0
+            try:
+                if p.connection.poll():
+                    status_code = communicate(p.connection.recv(), p)
+            except:
+                broadcast(p.name + " has disconnected.")
+                close(p)
+                status_code = 0
             match status_code:
                 case 0:
                     pass
@@ -116,7 +150,7 @@ def run():
         transactions(dice_roll)
         #                                   buy
         #                                   invest
-        if len(landmarks) == len(players[0].landmarks):
+        if landmark_amount == len(players[0].landmarks):
             broadcast(players[0].name + " has won the game")
             close(players[0])
         else:

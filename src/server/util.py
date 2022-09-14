@@ -1,8 +1,10 @@
 import re
 
-def multi_out(list):
-    for e in list:
-        out(e)
+def infos_out(list):
+    new_list = []
+    out("=========================")
+    for t in list:
+        out(t[1].format(t[2:]))
 
 def ask(question, regex):
     pattern = re.compile(regex)
