@@ -51,13 +51,18 @@ def reload_cards():
                     landmark_amount += 1
                 names.append(new_card.name)
 
-def gen_info():
+def gen_infos():
     info = []
-    info.append(("player_amount", "Player amount:      {}", len(players), ))
-    info.append(("Landmark amount:    ", landmark_amount, ))
-    info.append(("Cards:", ))
-    for c in self.cards:
-        info.append(c.gen_string())
+    info.append(("players", util.align("Players"), len(players), ))
+    for i in range(len(players)):
+        p = players[i]
+        info.append(("player" + str(i), "{:<30} Landmarks: {:>3} Money: {:>3}", p.name,
+            p.landmarks, p.money, ))
+    info.append(("landmark_amount", util.align("Landmark amount"), landmark_amount, ))
+    info.append(("cards", util.align("Cards"), len(cards)))
+    for i in range(len(cards)):
+        c = cards[i]
+        info.append(("card" + str(i), "{:<30} Availabel: {:>3}", c.name, c.availabel, ))
     return info
 
 def transactions(activation_no):
@@ -150,7 +155,7 @@ def run():
         transactions(dice_roll)
         #                                   buy
         #                                   invest
-        if landmark_amount == len(players[0].landmarks):
+        if landmark_amount <= players[0].landmarks:
             broadcast(players[0].name + " has won the game")
             close(players[0])
         else:

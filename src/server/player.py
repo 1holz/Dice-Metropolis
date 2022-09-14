@@ -6,7 +6,7 @@ class Player:
     name = "Dummy0"
     money = 0
     cards = []
-    landmarks = []
+    landmarks = 0
     flags = []
 
     def __init__(self, id, money, connection):
@@ -16,23 +16,28 @@ class Player:
     
     def receive_card(self, card, amount = 1):
         if card.type == "Landmark":
-            for i in range(amount):
-                self.landmarks.append(card.get_copy())
-        else:
-            for i in range(amount):
-                self.cards.append(card.get_copy())
+            self.landmarks += 1
+        for i in range(amount):
+            self.cards.append(card.get_copy())
     
-    def gen_strings(self):
-        strings = []
-        strings.append("Name:               " + self.name)
-        strings.append("Money:              " + str(self.money))
-        strings.append("Landmarks:")
-        for c in self.landmarks:
-            strings.append(c.gen_string())
-        strings.append("Cards:")
-        for c in self.cards:
-            strings.append(c.gen_string())
-        return strings
+    def gen_infos(self):
+        info = []
+        info.append(("name", util.align("Name"), self.name, ))
+        info.append(("money", util.align("Money"), self.money, ))
+        info.append(("landmark_amount", util.align("Landmarks"), self.landmarks, ))
+        info.append(("flags", util.align("Flags"), self.flags, ))
+        info.append(("cards", util.align("Cards"), len(self.cards)))
+        for i in range(len(cards)):
+            c = cards[i]
+            tupel = ("card" + str(i), )
+            string = "{:<30}"
+            if c.renovating:
+                string = string + " in renovation"
+            if c.investable > 0:
+                string = string + " with {:>3} invested"
+            tupel = tupel + (string, c.investment, c.renovating)
+            info.append(tupel)
+        return info
     
     def send(self, package):
         try:

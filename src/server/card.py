@@ -75,14 +75,6 @@ class Card:
         new.availabel = 0
         return new
 
-    def gen_info_bank(self):
-        string = self.name
-        if self.renovating:
-            string.append(" in renovation")
-        if self.investable and self.investment != 0:
-            string.append(" with " + str(self.investment) + " invested")
-        return string
-
     def gen_info_player(self):
         string = self.name
         if self.renovating:
@@ -92,15 +84,15 @@ class Card:
         return string
 
     def gen_infos(self):
-        strings = []
-        strings.append("Name:               " + self.name)
-        strings.append("Description:        " + self.desc)
-        strings.append("Type:               " + self.type)
-        strings.append("Icon:               " + self.icon)
-        strings.append("Activation numbers: " + ''.join(str(x) for x in self.activation_no))
-        strings.append("Activation mode:    " + self.activation)
-        strings.append("Cost:               " + str(self.cost))
-        strings.append("Start:              " + str(self.start))
-        strings.append("Availabel:          " + str(self.availabel))
-        strings.append("Investable:         " + str(self.investable))
-        return strings
+        info = []
+        info.append(("name", util.align("Name"), self.name, ))
+        info.append(("desc", util.align("Description"), self.desc, ))
+        info.append(("type", util.align("Type"), self.type, ))
+        info.append(("icon", util.align("Icon"), self.icon, ))
+        info.append(("activation_no", util.align("Activation numbers"), ''.join(str(x) for x in self.activation_no), ))
+        info.append(("activation", util.align("Activation mode"), self.activation, ))
+        info.append(("cost", util.align("Cost"), self.cost, ))
+        info.append(("start", util.align("Start"), self.start, ))
+        info.append(("availabel", util.align("Availabel"), self.availabel, ))
+        info.append(("investable", util.align("Investable"), self.investable, ))
+        return info

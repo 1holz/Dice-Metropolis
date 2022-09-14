@@ -16,8 +16,11 @@ def ask(question, regex):
         else:
             out("Your answer was invalid. Please try again.")
 
-def out(s):
-    print(s)
+def align(string):
+    return "{:<30}{}".format(string + ":", "{}")
 
-def inp(s):
-    return input(s)
+def out(s):
+    print(s.strip())
+
+def inp(s = ""):
+    return input(s).strip()

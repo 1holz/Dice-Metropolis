@@ -11,13 +11,13 @@ def ask(question, regex):
         else:
             out("Your answer was invalid. Please try again.")
 
-def inp():
-    return input()
-
 def multi_out(list):
     out("=========================")
     for e in list:
         out(e)
 
 def out(s):
-    print(s)
+    print(s.strip())
+
+def inp(s = ""):
+    return input(s).strip()
