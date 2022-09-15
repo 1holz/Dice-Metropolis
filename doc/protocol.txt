@@ -20,29 +20,26 @@ Recieveable by server only:
 {"type": "NAME", "name": str}:
 Sets the name of the player sending the package to "name".
 
-{"type": "REQ_PLAYERS"}:                                                    WIP
-Replies with list of player names.
+{"type": "INFO"}:
+Replies with general information like list of player names.
 
-{"type": "REQ_CARDS", "source": str}:                                       WIP
-Replies with the list of cards the source has. The source can be the name of a
-player of "BANK".
-
-{"type": "ANSWER", "question": str, "answer": str}:                         deprecated
-Supplies the answer to a question.
+{"type": "INFO_DETAIL", "src": str|int}:
+Replies with the list of cards the source has. The source can be the name or index of a
+player of "BANK". The server will attempt to interpret str as an int.
 
 
 
 Recieveable by client only:
 
-{"type": "PRINT", "msg": str}:                                              WIP
+{"type": "PRINT", "msg": str}:
 Outputs "msg".
 
-{"type": "ASK", "question": str, "regex": str}:                             deprecated
-Ask a question. The answer must match the regex.
+{"type": "PRINTS", "lines": [(str_id, str_format, args..., )]}:
+Outputs each tupel as a formated line.
 
 
 
 Console input:
 
-NAME:str:
+NAME:str:                                                                   WIP
 Send a NAME package to the server after some checks.

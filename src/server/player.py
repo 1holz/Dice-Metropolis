@@ -8,6 +8,7 @@ class Player:
     cards = []
     landmarks = 0
     flags = []
+    closed = False
 
     def __init__(self, id, money, connection):
         self.name = "Dummy" + str(id)
@@ -30,7 +31,7 @@ class Player:
                                 if flag in self.flags:
                                     self.flags.remove(flag)
 
-    def gen_infos(self):
+    def gen_info(self):
         info = []
         info.append(("name", util.align("Name"), self.name, ))
         info.append(("money", util.align("Money"), self.money, ))
@@ -50,6 +51,8 @@ class Player:
         return info
     
     def send(self, package):
+        if closed:
+            return
         try:
             self.connection.send(package)
         except:
@@ -63,10 +66,14 @@ class Player:
 
     def close(self):
         self.send({"type": "CLOSE"})
+        self.closed = True
         self.connection.close()
 
     def print(self, msg):
         self.send({"type": "PRINT", "msg": str(msg)})
+
+    def prints(self, lines):
+        self.send({"type": "PRINTS", "lines": lines})
 
     #def ask(self, question, regex):
     #    self.send({"type": "ASK", "question": question, "regex": regex})

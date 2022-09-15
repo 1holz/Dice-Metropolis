@@ -11,6 +11,7 @@ config = {}
 players = []
 landmark_amount = 0
 cards = []
+phase = 0
 
 def broadcast(msg):
     util.out(msg)
@@ -18,12 +19,11 @@ def broadcast(msg):
         p.print(msg)
 
 def close(player):
-    broadcast("Connection with " + player.name + " will be closed")
     try:
         player.close()
     except:
         util.out(player.name + " has closed connection on its own.")
-    players.remove(player)
+    broadcast("Connection with " + player.name + " will be closed")
 
 def load_config():
     global config
@@ -51,7 +51,7 @@ def reload_cards():
                     landmark_amount += 1
                 names.append(new_card.name)
 
-def gen_infos():
+def gen_info():
     info = []
     info.append(("players", util.align("Players"), len(players), ))
     for i in range(len(players)):
@@ -112,7 +112,13 @@ def activate(activation_no, type_l):
                         else:
                             invalid_action(c.name, action)
                     case "COMBO":
-                        pass # str int: player gets int coins for each card with str icon
+                        if len(act) > 1:
+                            amount = 0
+                            for card in owner.cards:
+                                if card.icon == act[1]:
+                                    amount += 1
+                            owner.money += amount * int(act[2])
+                                broadcast(owner.name + " recieved " + str(amount * int(act[2])) + " coin(s) with the " + c.name)
                     case "RENOVATE:":
                         c.renovating = True
                         broadcast(owner.name + " started renovating " + c.name)
@@ -132,29 +138,27 @@ def activate(activation_no, type_l):
 def invalid_action(name, action):
     util.out(name + " contains invalid action " + action)
 
-def communicate(package, player):
+def communicate():
+    while True:
+        for p in players[:]:
+            if p.closed:
+                continue
+            try:
+                if p.connection.poll() and handle_package(p.connection.recv(), p):
+                    break
+            except:
+                close(p)
+                broadcast(p.name + " has disconnected")
+        if players[0].closed:
+            break
+    return players[0].closed
+
+def handle_package(package, player):
     match package["type"]:
         case "PING":
             player.pong()
         case "PONG":
             util.out("Connection with player " + player.name + " confirmed")
-        case "NAME":
-            pattern = re.compile(regex)
-            if "name" not in package:
-                player.error("The name is not present.")
-            new_name = str(package["name"])
-            if new_name == "BANK":
-                player.error("The name is equal to BANK.")
-                return 0
-                return 0
-            for p in players:
-                if new_name == p.name:
-                    player.error("The name " + new_name + " is already taken.")
-                    return 0
-            if not re.compile("^.*$").match(new_name):
-                player.error("The name " + new_name + " contains illegal charcters")
-                return 0
-            player.name = str(package["name"])
         case "ERROR":
             if "msg" in package:
                 util.out("ERROR from " + player.name + ": " + str(package["msg"]))
@@ -162,9 +166,50 @@ def communicate(package, player):
                 util.out("An unspecified ERROR occured with " + player.name)
         case "CLOSE":
             close(player)
+        case "NAME":
+            if "name" not in package:
+                player.error("The name is not present")
+                return
+            new_name = str(package["name"])
+            if new_name == "BANK":
+                player.error("The name is equal to BANK")
+                return
+            for p in players:
+                if new_name == p.name:
+                    player.error("The name " + new_name + " is already taken")
+                    return
+            if not re.compile("^\S*[^\d\s]+\S*$").match(new_name):
+                player.error("The name " + new_name + " contains illegal charcters")
+                return
+            player.name = str(package["name"])
+        case "INFO":
+            player.prints(gen_info())
+        case "INFO_DETAIL":
+            if "src" not in package:
+                player.error("Source is missing for detailed info")
+                return
+            src = package["src"]
+            info = []
+            if isinstance(src, int):
+                info = players[src % len(players)].gen_info()
+            else:
+                src = str(src)
+                if src == "BANK":
+                    info = gen_info()
+                elif src.isdigit():
+                    info = players[int(src) % len(players)].gen_info()
+                else:
+                    for p in players:
+                        if p.name == src:
+                            info = p.gen_info()
+                            break
+            if info:
+                player.prints(info)
+            else:
+                player.error("The source " + src + " is unavailabel")
         case _:
             util.out("Received package from " + player.name + " that couldn't be processed: " + package)
-    return 0
+    return False
 
 def start():
     load_config()
@@ -184,36 +229,35 @@ def start():
 
 def run():
     global landmark_amount
-    phase = "dice_select" # "dice_select", "roll_confirm", "buy", "invest"
+    global phase
     while True:
-        for p in players[:]:
-            status_code = 0
-            try:
-                if p.connection.poll():
-                    status_code = communicate(p.connection.recv(), p)
-            except:
-                broadcast(p.name + " has disconnected.")
-                close(p)
-                status_code = 0
-            match status_code:
-                case 0:
-                    pass
-                case 1:
-                    break
+        if players[0].closed:
+            players.remove(players[0])
         if len(players) == 0:
             break
         #                                   dice mode?
+        if communicate():
+            continue
         dice_roll = dice.roll_1()
         #                                   add 2?
         #                                   reroll?
+        if communicate():
+            continue
         transactions(dice_roll)
         #                                   buy
+        if communicate():
+            continue
         #                                   invest
+        if communicate():
+            continue
         if landmark_amount <= players[0].landmarks:
             broadcast(players[0].name + " has won the game")
             close(players[0])
-        else: #                             check double
-            players.append(players.pop(0))
+        else:
+            if False: #                     check double
+                pass
+            else:
+                players.append(players.pop(0))
 
 def finish():
     for p in players:

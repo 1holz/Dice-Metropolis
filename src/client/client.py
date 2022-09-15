@@ -29,7 +29,7 @@ class Client:
     def start(self):
         pass
         #util.out("Please enter your name: ")
-        #pattern = re.compile("^.*$")
+        #pattern = re.compile("^\S*[^\d\s]+\S*$")
         #answer = None
         #while True:
         #    if queue.qsize() <= 0:
@@ -43,12 +43,8 @@ class Client:
 
     def run(self):
         while True:
-            status_code = recieve(self.connection, self.connection.recv())
-            match status_code:
-                case 0:
-                    pass
-                case 1:
-                    break
+            if recieve(self.connection, self.connection.recv()):
+                break
             if self.queue.qsize() > 0:
                 send(self.queue.get())
 
@@ -69,17 +65,22 @@ def recieve(connection, package):
                 util.out("An unspecified ERROR occured")
         case "CLOSE":
             util.out("Connection will be closed")
-            return 1
+            return True
         case "PRINT":
             if "msg" in package:
                 util.out(str(package["msg"]))
             else:
                 util.out("ERROR: An empty message was recieved")
-        case "ASK":
-            pass # WIP
+        case "PRINTS":
+            if "lines" not in package:
+                util.out("ERROR: A message without lines was recieved")
+            lines = []
+            for line in package["lines"]:
+                lines.append(line[1].format(line[2:]))
+            util.multi_out(lines)
         case _:
             util.out("Received package from " + player.name + " that couldn't be processed: " + package)
-    return 0
+    return False
 
 def send(connection, in_str):
     pass

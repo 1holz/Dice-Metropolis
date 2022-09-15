@@ -75,15 +75,7 @@ class Card:
         new.availabel = 0
         return new
 
-    def gen_info_player(self):
-        string = self.name
-        if self.renovating:
-            string.append(" in renovation")
-        if self.investable and self.investment != 0:
-            string.append(" with " + str(self.investment) + " invested")
-        return string
-
-    def gen_infos(self):
+    def gen_info(self):
         info = []
         info.append(("name", util.align("Name"), self.name, ))
         info.append(("desc", util.align("Description"), self.desc, ))
