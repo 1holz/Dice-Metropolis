@@ -19,7 +19,17 @@ class Player:
             self.landmarks += 1
         for i in range(amount):
             self.cards.append(card.get_copy())
-    
+            if card.activation == "passiv":
+                for action in card.actions:
+                    act = action.split()
+                    match act[0]:
+                        case "GRANT":
+                            self.flags = self.flags + act[1:]
+                        case "REVOKE":
+                            for flag in act[1:]:
+                                if flag in self.flags:
+                                    self.flags.remove(flag)
+
     def gen_infos(self):
         info = []
         info.append(("name", util.align("Name"), self.name, ))

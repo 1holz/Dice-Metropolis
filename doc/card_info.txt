@@ -72,11 +72,14 @@ actions:
 A machine readable list of string which specifies what actions will be excuted
 by this card. 
 Possible options (WIP):
-- BANK int|"inv": player recieves int coins from the bank
-- STEAL int|"inv"|"all": steals the specified amount from the active player
-- COMBO str int: player gets int coins for each card with str icon
-- RENOVATE: sets this card to renovating
-- GRANT str: grants some functionality to the player
+- BANK int|"inv": Player recieves int coins from the bank
+- STEAL int|"inv"|"all": Steals the specified amount from the active player
+- COMBO str int: Player gets int coins for each card with str icon
+- RENOVATE: Sets this card to renovating
+- GRANT str: Grants some functionality to the player. Will be executed upon obtaining if
+        activation == "passiv"
+- REVOKE str: Revokes some functionality from the player if availabel. Will be executed upon
+        obtaining if activation == "passiv"
 
 investable:
 An interger indicating the maximal investment that can be made at the end of a

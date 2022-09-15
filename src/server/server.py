@@ -67,19 +67,70 @@ def gen_infos():
 
 def transactions(activation_no):
     broadcast(players[0].name + " rolled a " + str(activation_no))
+    activate(activation_no, lambda type : type != "Restaurants")
+    activate(activation_no, lambda type : type == "Restaurants" or type == "Major Establishment")
+    activate(activation_no, lambda type : type != "Major Establishment")
+
+def activate(activation_no, type_l):
     active_player = players[0]
-    for p in players:
-        for c in p.cards:
-            if c.type == "Restaurants":
-                pass # check activation & execute
-    for p in players:
-        for c in p.cards:
-            if c.type != "Restaurants" and c.type != "Major Establishment":
-                pass # check activation & execute
-    for p in players:
-        for c in p.cards:
-            if c.type == "Major Establishment":
-                pass # check activation & execute
+    for i in range(len(players)):
+        owner = players[i]
+        for c in players[i].cards:
+            if (type_l(c.type) or activation_no not in c.activation_no or
+                c.activation == "passiv" or c.activation == "self" and i > 0 or
+                c.activation == "others" and i == 0):
+                continue
+            if c.renovating:
+                c.renovating = False
+                broadcast(owner.name + " finished renovating " + c.name)
+                continue
+            for action in c.actions:
+                act = action.split()
+                match act[0].upper():
+                    case "BANK":
+                        if len(act) > 0:
+                            if act[1] == "inv".lower():
+                                owner.money += c.investment
+                                broadcast(owner.name + " recieved " + str(c.investment) + " coin(s) with the " + c.name)
+                            else:
+                                owner.money += int(act[1])
+                                broadcast(owner.name + " recieved " + act[1] + " coin(s) with the " + c.name)
+                        else:
+                            invalid_action(c.name, action)
+                    case "STEAL":
+                        if len(act) > 0:
+                            taken = 0
+                            if act[1] == "inv".lower():
+                                taken = min(c.investment, active_player.money)
+                            elif act[1] == "all".lower():
+                                taken = active_player.money
+                            else:
+                                taken = min(int(act[1]), active_player.money)
+                            active_player.money -= taken
+                            owner.money += taken
+                            broadcast(owner.name + " took " + str(taken) + " coin(s) with the " + c.name)
+                        else:
+                            invalid_action(c.name, action)
+                    case "COMBO":
+                        pass # str int: player gets int coins for each card with str icon
+                    case "RENOVATE:":
+                        c.renovating = True
+                        broadcast(owner.name + " started renovating " + c.name)
+                    case "GRANT":
+                        owner.flags = owner.flags + act[1:]
+                        broadcast(owner.name + " got flag(s): " + ", ".join(act[1:]) + " with the " + c.name)
+                    case "REVOKE":
+                        f = []
+                        for flag in act[1:]:
+                            if flag in owner.flags:
+                                owner.flags.remove(flag)
+                                f.append(flag)
+                        broadcast(owner.name + " lost flag(s): " + ", ".join(f) + " with the " + c.name)
+                    case _:
+                        invalid_action(c.name, action)
+
+def invalid_action(name, action):
+    util.out(name + " contains invalid action " + action)
 
 def communicate(package, player):
     match package["type"]:
@@ -117,6 +168,7 @@ def communicate(package, player):
 
 def start():
     load_config()
+    dice.set_simulation(bool(config["simulation"]))
     addr = ("127.0.0.1", int(config["port"]))
     listener = Listener(addr, authkey=config["key"].encode("utf-8"))
     init_money = int(config["init_money"])
@@ -132,6 +184,7 @@ def start():
 
 def run():
     global landmark_amount
+    phase = "dice_select" # "dice_select", "roll_confirm", "buy", "invest"
     while True:
         for p in players[:]:
             status_code = 0
@@ -152,13 +205,14 @@ def run():
         #                                   dice mode?
         dice_roll = dice.roll_1()
         #                                   add 2?
+        #                                   reroll?
         transactions(dice_roll)
         #                                   buy
         #                                   invest
         if landmark_amount <= players[0].landmarks:
             broadcast(players[0].name + " has won the game")
             close(players[0])
-        else:
+        else: #                             check double
             players.append(players.pop(0))
 
 def finish():

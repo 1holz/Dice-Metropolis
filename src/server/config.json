@@ -2,5 +2,6 @@
     "port": 6666,
     "key": "secret",
     "player_amount": 1,
-    "init_money": 3
+    "init_money": 3,
+    "simulation": false
 }
