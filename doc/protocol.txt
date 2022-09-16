@@ -25,11 +25,19 @@ Replies with general information like list of player names.
 
 {"type": "INFO_DETAIL", "src": str|int}:
 Replies with the list of cards the source has. The source can be the name or index of a
-player of "BANK". The server will attempt to interpret str as an int.
+player or "BANK". The server will attempt to interpret str as an int.
+
+{"type": "BUY", "card": str|int}:                               WIP
+Buys the card. The source can be the name or index of a card. The server will attempt to
+interpret str as an int.
 
 
 
 Recieveable by client only:
+
+{"type": "PHASE", "phase": int}:
+Notifies client of being active and of the current phase. Server expects an appropriate answer to
+this.
 
 {"type": "PRINT", "msg": str}:
 Outputs "msg".
@@ -41,5 +49,14 @@ Outputs each tupel as a formated line.
 
 Console input:
 
-NAME:str:                                                                   WIP
+name str
 Send a NAME package to the server after some checks.
+
+info
+Requests info.
+
+info_detailed str|int
+Requests detailed info for the source.
+
+buy str|int
+Attempts to buy the card.

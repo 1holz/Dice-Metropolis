@@ -28,25 +28,13 @@ class Client:
 
     def start(self):
         pass
-        #util.out("Please enter your name: ")
-        #pattern = re.compile("^\S*[^\d\s]+\S*$")
-        #answer = None
-        #while True:
-        #    if queue.qsize() <= 0:
-        #        continue
-        #    answer = queue.get()
-        #    if pattern.match(answer):
-        #        self.send(send. connection, "NAME:" + answer)
-        #        break
-        #    else:
-        #        util.out("Your name is invalid. Please try again.")
 
     def run(self):
         while True:
-            if recieve(self.connection, self.connection.recv()):
+            if self.connection.poll() and recieve(self.connection, self.connection.recv()):
                 break
             if self.queue.qsize() > 0:
-                send(self.queue.get())
+                send(self.connection, self.queue.get())
 
     def finish(self):
         self.connection.close()
@@ -60,41 +48,77 @@ def recieve(connection, package):
             util.out("Connection with server confirmed")
         case "ERROR":
             if "msg" in package:
-                util.out("ERROR: " + str(package["msg"]))
+                error(str(package["msg"]))
             else:
                 util.out("An unspecified ERROR occured")
         case "CLOSE":
             util.out("Connection will be closed")
             return True
+        case "PHASE":
+            if "phase" not in package or not isinstance(package["phase"], int):
+                error("Exact phase is missing or invalid")
+                return False
+            match package["phase"]:
+                case 0:
+                    pass
+                case 1:
+                    pass
+                case _:
+                    error("Phase " + package["phase"] + " is invalid")
         case "PRINT":
             if "msg" in package:
                 util.out(str(package["msg"]))
             else:
-                util.out("ERROR: An empty message was recieved")
+                error("An empty message was recieved")
         case "PRINTS":
             if "lines" not in package:
-                util.out("ERROR: A message without lines was recieved")
+                error("A message without lines was recieved")
+                return False
             lines = []
             for line in package["lines"]:
-                lines.append(line[1].format(line[2:]))
+                print(line)
+                lines.append(line[1].format(*line[2:]))
             util.multi_out(lines)
         case _:
-            util.out("Received package from " + player.name + " that couldn't be processed: " + package)
+            error("Received package from " + player.name + " that couldn't be processed: " + package)
     return False
 
 def send(connection, in_str):
-    pass
+    com = in_str.split(" ", 1)
+    match com[0].upper():
+        case "NAME":
+            if len(com) > 1 and re.compile("^\S*[^\d\s]+\S*$").match(com[1]):
+                connection.send({"type": "NAME", "name": com[1]})
+            else:
+                error("Some characters in the name are invalid")
+        case "INFO":
+            connection.send({"type": "INFO"})
+        case "INFO_DETAILED":
+            if len(com) > 1:
+                connection.send({"type": "INFO_DETAIL", "src": com[1]})
+            else:
+                error("Source argument is missing for detailed info")
+        case "BUY":
+            if len(com) > 1:
+                connection.send({"type": "BUY", "card": com[1]})
+            else:
+                error("Source argument is missing for buy")
+        case _:
+            error("Command " + in_str + " is not availabel")
 
-def ask(question, regex):
-    pattern = re.compile(regex)
-    answer = None
-    while True:
-        util.out(question)
-        answer = util.inp()
-        if pattern.match(answer):
-            return answer
-        else:
-            out("Your answer was invalid. Please try again.")
+def error(msg):
+    util.out("ERROR: " + msg)
+
+#def ask(question, regex):
+#    pattern = re.compile(regex)
+#    answer = None
+#    while True:
+#        util.out(question)
+#        answer = util.inp()
+#        if pattern.match(answer):
+#            return answer
+#        else:
+#            out("Your answer was invalid. Please try again.")
 
 if __name__ == '__main__':
     client = Client()

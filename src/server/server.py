@@ -62,7 +62,7 @@ def gen_info():
     info.append(("cards", util.align("Cards"), len(cards)))
     for i in range(len(cards)):
         c = cards[i]
-        info.append(("card" + str(i), "{:<30} Availabel: {:>3}", c.name, c.availabel, ))
+        info.append(("card" + str(i), "{:<30} Index: {:>3} Availabel: {:>3}", c.name, i, c.availabel, ))
     return info
 
 def transactions(activation_no):
@@ -118,7 +118,7 @@ def activate(activation_no, type_l):
                                 if card.icon == act[1]:
                                     amount += 1
                             owner.money += amount * int(act[2])
-                                broadcast(owner.name + " recieved " + str(amount * int(act[2])) + " coin(s) with the " + c.name)
+                            broadcast(owner.name + " recieved " + str(amount * int(act[2])) + " coin(s) with the " + c.name)
                     case "RENOVATE:":
                         c.renovating = True
                         broadcast(owner.name + " started renovating " + c.name)
@@ -154,7 +154,7 @@ def communicate():
     return players[0].closed
 
 def handle_package(package, player):
-    match package["type"]:
+    match package["type"].upper():
         case "PING":
             player.pong()
         case "PONG":
@@ -169,44 +169,40 @@ def handle_package(package, player):
         case "NAME":
             if "name" not in package:
                 player.error("The name is not present")
-                return
+                return False
             new_name = str(package["name"])
             if new_name == "BANK":
                 player.error("The name is equal to BANK")
-                return
+                return False
             for p in players:
                 if new_name == p.name:
                     player.error("The name " + new_name + " is already taken")
-                    return
+                    return False
             if not re.compile("^\S*[^\d\s]+\S*$").match(new_name):
                 player.error("The name " + new_name + " contains illegal charcters")
-                return
+                return False
+            broadcast(player.name + " has changed the name to " + str(package["name"]))
             player.name = str(package["name"])
         case "INFO":
             player.prints(gen_info())
         case "INFO_DETAIL":
             if "src" not in package:
                 player.error("Source is missing for detailed info")
-                return
+                return False
             src = package["src"]
             info = []
-            if isinstance(src, int):
-                info = players[src % len(players)].gen_info()
+            if src == "BANK":
+                info = gen_info()
             else:
-                src = str(src)
-                if src == "BANK":
-                    info = gen_info()
-                elif src.isdigit():
-                    info = players[int(src) % len(players)].gen_info()
-                else:
-                    for p in players:
-                        if p.name == src:
-                            info = p.gen_info()
-                            break
+                e = from_list(players, src)
+                if e is not None:
+                    info = e.gen_info()
             if info:
                 player.prints(info)
             else:
                 player.error("The source " + src + " is unavailabel")
+        case "BUY":
+            pass
         case _:
             util.out("Received package from " + player.name + " that couldn't be processed: " + package)
     return False
@@ -236,13 +232,13 @@ def run():
         if len(players) == 0:
             break
         #                                   dice mode?
-        if communicate():
-            continue
+        #if communicate():
+        #    continue
         dice_roll = dice.roll_1()
         #                                   add 2?
         #                                   reroll?
-        if communicate():
-            continue
+        #if communicate():
+        #    continue
         transactions(dice_roll)
         #                                   buy
         if communicate():
@@ -258,6 +254,19 @@ def run():
                 pass
             else:
                 players.append(players.pop(0))
+
+def from_list(list, element):
+    if isinstance(element, int):
+        return list[element % len(list)]
+    else:
+        element = str(element)
+        if element.isdigit():
+            return list[int(element) % len(list)]
+        else:
+            for e in list:
+                if e.name == element:
+                    return e
+                return None
 
 def finish():
     for p in players:

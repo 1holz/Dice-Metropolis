@@ -51,7 +51,7 @@ class Player:
         return info
     
     def send(self, package):
-        if closed:
+        if self.closed:
             return
         try:
             self.connection.send(package)
@@ -68,6 +68,9 @@ class Player:
         self.send({"type": "CLOSE"})
         self.closed = True
         self.connection.close()
+
+    def phase(self, phase):
+        self.send({"type": "PHASE", "phase": phase})
 
     def print(self, msg):
         self.send({"type": "PRINT", "msg": str(msg)})
