@@ -5,13 +5,6 @@ from multiprocessing import Process, Queue
 from multiprocessing.connection import Client as Connection
 from threading import Thread
 
-def get_connection():
-    config = {}
-    with open("config.json", "r") as file:
-        config = json.loads(file.read())
-    addr = (config["ip"], int(config["port"]))
-    return Connection(addr, authkey=config["key"].encode("utf-8"))
-
 def console(queue):
     while True:
         queue.put(util.inp())
@@ -20,18 +13,23 @@ class Client:
     connection = None
     queue = Queue()
     thread = Thread(target = console, args = (queue, ), daemon = True)
+    sync_interval = 0.0
 
     def __init__(self):
         util.out("Client start")
-        self.connection = get_connection()
-        self.thread.start()
+        config = {}
+        with open("config.json", "r") as file:
+            config = json.loads(file.read())
+        self.sync_interval = float(config["sync_interval"])
+        addr = (config["ip"], int(config["port"]))
+        self.connection = Connection(addr, authkey=config["key"].encode("utf-8"))
 
     def start(self):
-        pass
+        self.thread.start()
 
     def run(self):
         while True:
-            if self.connection.poll() and recieve(self.connection, self.connection.recv()):
+            if self.connection.poll(self.sync_interval) and recieve(self.connection, self.connection.recv()):
                 break
             if self.queue.qsize() > 0:
                 send(self.connection, self.queue.get())
@@ -76,7 +74,6 @@ def recieve(connection, package):
                 return False
             lines = []
             for line in package["lines"]:
-                print(line)
                 lines.append(line[1].format(*line[2:]))
             util.multi_out(lines)
         case _:
@@ -92,12 +89,11 @@ def send(connection, in_str):
             else:
                 error("Some characters in the name are invalid")
         case "INFO":
-            connection.send({"type": "INFO"})
-        case "INFO_DETAILED":
-            if len(com) > 1:
-                connection.send({"type": "INFO_DETAIL", "src": com[1]})
+            com = in_str.split(" ", 2)
+            if len(com) > 2:
+                connection.send({"type": "INFO", "player": com[1][0].lower() == "p", "src": com[2]})
             else:
-                error("Source argument is missing for detailed info")
+                connection.send({"type": "INFO"})
         case "BUY":
             if len(com) > 1:
                 connection.send({"type": "BUY", "card": com[1]})

@@ -1,5 +1,6 @@
 {
     "ip": "127.0.0.1",
     "port": 6666,
-    "key": "secret"
+    "key": "secret",
+    "sync_interval": 0.05
 }

@@ -20,12 +20,9 @@ Recieveable by server only:
 {"type": "NAME", "name": str}:
 Sets the name of the player sending the package to "name".
 
-{"type": "INFO"}:
-Replies with general information like list of player names.
-
-{"type": "INFO_DETAIL", "src": str|int}:
-Replies with the list of cards the source has. The source can be the name or index of a
-player or "BANK". The server will attempt to interpret str as an int.
+{"type": "INFO", "player": bool, "src": str|int}:
+Replies with the list of info the source has or generic info. The source can be the name or index
+of a player or card. The server will attempt to interpret str as an int.
 
 {"type": "BUY", "card": str|int}:                               WIP
 Buys the card. The source can be the name or index of a card. The server will attempt to
@@ -52,11 +49,8 @@ Console input:
 name str
 Send a NAME package to the server after some checks.
 
-info
-Requests info.
-
-info_detailed str|int
-Requests detailed info for the source.
+info c|p str|int
+Requests info for the source.
 
 buy str|int
 Attempts to buy the card.

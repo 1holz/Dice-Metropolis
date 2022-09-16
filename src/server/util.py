@@ -17,7 +17,7 @@ def ask(question, regex):
             out("Your answer was invalid. Please try again.")
 
 def align(string):
-    return "{:<30}{}".format(string + ":", "{}")
+    return "{:<30} {}".format(string + ":", "{}")
 
 def out(s):
     print(s.strip())

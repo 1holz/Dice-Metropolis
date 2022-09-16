@@ -56,13 +56,13 @@ def gen_info():
     info.append(("players", util.align("Players"), len(players), ))
     for i in range(len(players)):
         p = players[i]
-        info.append(("player" + str(i), "{:<30} Landmarks: {:>3} Money: {:>3}", p.name,
+        info.append(("player" + str(i), "{:<30} Landmarks: {:>3}, Money: {:>3}", p.name,
             p.landmarks, p.money, ))
     info.append(("landmark_amount", util.align("Landmark amount"), landmark_amount, ))
     info.append(("cards", util.align("Cards"), len(cards)))
     for i in range(len(cards)):
         c = cards[i]
-        info.append(("card" + str(i), "{:<30} Index: {:>3} Availabel: {:>3}", c.name, i, c.availabel, ))
+        info.append(("card" + str(i), "{:<30} Index: {:>3}, Availabel: {:>3}", c.name, i, c.availabel, ))
     return info
 
 def transactions(activation_no):
@@ -144,7 +144,7 @@ def communicate():
             if p.closed:
                 continue
             try:
-                if p.connection.poll() and handle_package(p.connection.recv(), p):
+                if p.connection.poll(float(config["sync_interval"])) and handle_package(p.connection.recv(), p):
                     break
             except:
                 close(p)
@@ -184,23 +184,14 @@ def handle_package(package, player):
             broadcast(player.name + " has changed the name to " + str(package["name"]))
             player.name = str(package["name"])
         case "INFO":
-            player.prints(gen_info())
-        case "INFO_DETAIL":
-            if "src" not in package:
-                player.error("Source is missing for detailed info")
-                return False
-            src = package["src"]
-            info = []
-            if src == "BANK":
-                info = gen_info()
+            if "src" not in package or "player" not in package:
+                player.prints(gen_info())
             else:
-                e = from_list(players, src)
-                if e is not None:
-                    info = e.gen_info()
-            if info:
-                player.prints(info)
-            else:
-                player.error("The source " + src + " is unavailabel")
+                e = from_list(players if package["player"] else cards, package["src"])
+                if e is None:
+                    player.error("The source " + package["src"] + " is unavailabel for " + "players" if package["player"] else "cards")
+                    return False
+                player.prints(e.gen_info())
         case "BUY":
             pass
         case _:

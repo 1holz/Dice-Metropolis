@@ -65,8 +65,8 @@ class Card:
             self.start = 1
         if availabel + self.start != 1 and self.icon == "tower":
             error(self.name, "availabel")
-            self.availabel = 1 - self.start
-        self.availabel = self.availabel * player_amount
+            availabel = 1 - self.start
+        self.availabel = availabel * player_amount
         self.actions = actions
         self.investable = investable
 
@@ -87,4 +87,5 @@ class Card:
         info.append(("start", util.align("Start"), self.start, ))
         info.append(("availabel", util.align("Availabel"), self.availabel, ))
         info.append(("investable", util.align("Investable"), self.investable, ))
+        info.append(("actions", "", self.actions, ))
         return info

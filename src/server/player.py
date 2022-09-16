@@ -38,8 +38,8 @@ class Player:
         info.append(("landmark_amount", util.align("Landmarks"), self.landmarks, ))
         info.append(("flags", util.align("Flags"), self.flags, ))
         info.append(("cards", util.align("Cards"), len(self.cards)))
-        for i in range(len(cards)):
-            c = cards[i]
+        for i in range(len(self.cards)):
+            c = self.cards[i]
             tupel = ("card" + str(i), )
             string = "{:<30}"
             if c.renovating:
