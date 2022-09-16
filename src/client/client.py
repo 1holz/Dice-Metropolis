@@ -57,10 +57,14 @@ def recieve(connection, package):
                 error("Exact phase is missing or invalid")
                 return False
             match package["phase"]:
-                case 0:
-                    pass
                 case 1:
-                    pass
+                    util.out("Phase " + package["phase"]) # WIP
+                case 2:
+                    util.out("Phase " + package["phase"]) # WIP
+                case 3:
+                    util.out("You can now buy a card")
+                case 4:
+                    util.out("Phase " + package["phase"]) # WIP
                 case _:
                     error("Phase " + package["phase"] + " is invalid")
         case "PRINT":
@@ -98,7 +102,7 @@ def send(connection, in_str):
             if len(com) > 1:
                 connection.send({"type": "BUY", "card": com[1]})
             else:
-                error("Source argument is missing for buy")
+                connection.send({"type": "BUY"})
         case _:
             error("Command " + in_str + " is not availabel")
 

@@ -11,7 +11,7 @@ config = {}
 players = []
 landmark_amount = 0
 cards = []
-phase = 0
+phase = 0 # 0 = None, 1 = Choose dice, 2 = Confirm roll, 3 = Buy, 4 = Invest
 
 def broadcast(msg):
     util.out(msg)
@@ -145,11 +145,13 @@ def communicate():
                 continue
             try:
                 if p.connection.poll(float(config["sync_interval"])) and handle_package(p.connection.recv(), p):
+                    global phase
+                    phase = 0
                     break
-            except:
+            except EOFError as e:
                 close(p)
                 broadcast(p.name + " has disconnected")
-        if players[0].closed:
+        if players[0].closed or phase == 0:
             break
     return players[0].closed
 
@@ -189,11 +191,40 @@ def handle_package(package, player):
             else:
                 e = from_list(players if package["player"] else cards, package["src"])
                 if e is None:
-                    player.error("The source " + package["src"] + " is unavailabel for " + "players" if package["player"] else "cards")
+                    player.error("The source " + str(package["src"]) + " is unavailabel for " + "players" if package["player"] else "cards")
                     return False
                 player.prints(e.gen_info())
         case "BUY":
-            pass
+            if "card" not in package:
+                broadcast(player.name + " skipped buying")
+                return True
+            c = from_list(cards, package["card"])
+            if c is None:
+                player.error("The card " + str(package["card"]) + " is unavailabel")
+                return False
+            if player != players[0]:
+                player.error("Only the active player can buy cards")
+                return False
+            global phase
+            if phase != 3:
+                player.error("You can only buy during the buy phase")
+                return False
+            if c.availabel < 1:
+                player.error(c.name + " is nolonger availabel")
+                return False
+            if player.money < c.cost:
+                player.error(c.name + " is to expensive. You are missing " + str(c.cost - player.money) + " coin(s)")
+                return False
+            if c.icon == "tower":
+                for card in player.cards:
+                    if c.name == card.name:
+                        player.error("You can only buy " + c.name + " once since it has a " + c.icon + " icon")
+                        return False
+            player.money -= c.cost
+            player.receive_card(c)
+            c.availabel -= 1
+            broadcast(player.name + " bought " + c.name)
+            return True
         case _:
             util.out("Received package from " + player.name + " that couldn't be processed: " + package)
     return False
@@ -222,21 +253,23 @@ def run():
             players.remove(players[0])
         if len(players) == 0:
             break
-        #                                   dice mode?
-        #if communicate():
+        phase = 0
+                                            # dice mode?
+        #if communicate():                  # phase 1
         #    continue
         dice_roll = dice.roll_1()
-        #                                   add 2?
-        #                                   reroll?
-        #if communicate():
+                                            # add 2?
+                                            # reroll?
+        #if communicate():                  # phase 2
         #    continue
         transactions(dice_roll)
-        #                                   buy
+        phase = 3 # buy
+        players[0].phase(phase)
         if communicate():
             continue
-        #                                   invest
-        if communicate():
-            continue
+                                            # invest
+        #if communicate():                  # phase 4
+        #    continue
         if landmark_amount <= players[0].landmarks:
             broadcast(players[0].name + " has won the game")
             close(players[0])

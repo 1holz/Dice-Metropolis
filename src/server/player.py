@@ -7,7 +7,7 @@ class Player:
     money = 0
     cards = []
     landmarks = 0
-    flags = []
+    flags = ["1dice"]
     closed = False
 
     def __init__(self, id, money, connection):
@@ -46,7 +46,7 @@ class Player:
                 string = string + " in renovation"
             if c.investable > 0:
                 string = string + " with {:>3} invested"
-            tupel = tupel + (string, c.investment, c.renovating)
+            tupel = tupel + (string, c.name, c.investment, c.renovating)
             info.append(tupel)
         return info
     
@@ -77,6 +77,3 @@ class Player:
 
     def prints(self, lines):
         self.send({"type": "PRINTS", "lines": lines})
-
-    #def ask(self, question, regex):
-    #    self.send({"type": "ASK", "question": question, "regex": regex})
