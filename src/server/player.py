@@ -7,8 +7,14 @@ class Player:
     money = 0
     cards = []
     landmarks = 0
-    flags = ["1dice"]
     closed = False
+    # flags:
+    dice_modes = ["1"]
+    roll_manipulation = []
+    buffs = []
+    double_repeats = 0
+    min_money = 0
+    skip_compensation = 0
 
     def __init__(self, id, money, connection):
         self.name = "Dummy" + str(id)
@@ -25,11 +31,47 @@ class Player:
                     act = action.split()
                     match act[0]:
                         case "GRANT":
-                            self.flags = self.flags + act[1:]
+                            self.grant(act[1:])
                         case "REVOKE":
-                            for flag in act[1:]:
-                                if flag in self.flags:
-                                    self.flags.remove(flag)
+                            self.revoke(act[1:])
+
+    def grant(flags):
+        for flag in flags:
+            f = flag.split("-")
+            match f[0].lower():
+                case "dice":
+                    util.out("WIP")
+                case "roll":
+                    util.out("WIP")
+                case "buff":
+                    util.out("WIP")
+                case "double_repeats":
+                    util.out("WIP")
+                case "min":
+                    util.out("WIP")
+                case "skip":
+                    util.out("WIP")
+                case _:
+                    util.out("Flag " + flag + " is unavailabel and cannot be granted")
+
+    def revoke(flags):
+        for flag in flags:
+            f = flag.split("-")
+            match f[0].lower():
+                case "dice":
+                    util.out("WIP")
+                case "roll":
+                    util.out("WIP")
+                case "buff":
+                    util.out("WIP")
+                case "double_repeats":
+                    util.out("WIP")
+                case "min":
+                    util.out("WIP")
+                case "skip":
+                    util.out("WIP")
+                case _:
+                    util.out("Flag " + flag + " is unavailabel and cannot be revoked")
 
     def gen_info(self):
         info = []

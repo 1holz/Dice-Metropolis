@@ -85,9 +85,9 @@ def activate(activation_no, type_l):
                 broadcast(owner.name + " finished renovating " + c.name)
                 continue
             for action in c.actions:
-                act = action.split()
+                act = str(action).split()
                 match act[0].upper():
-                    case "BANK":
+                    case "GET":
                         if len(act) > 0:
                             if act[1] == "inv".lower():
                                 owner.money += c.investment
@@ -95,6 +95,19 @@ def activate(activation_no, type_l):
                             else:
                                 owner.money += int(act[1])
                                 broadcast(owner.name + " recieved " + act[1] + " coin(s) with the " + c.name)
+                        else:
+                            invalid_action(c.name, action)
+                    case "LOSE":
+                        if len(act) > 0:
+                            lost = 0
+                            if act[1] == "inv".lower():
+                                lost = min(c.investment, owner.money)
+                            elif act[1] == "all".lower():
+                                lost = owner.money
+                            else:
+                                lost = min(int(act[1]), owner.money)
+                            owner.money -= lost
+                            broadcast(owner.name + " lost " + str(lost) + " coin(s) with the " + c.name)
                         else:
                             invalid_action(c.name, action)
                     case "STEAL":
@@ -123,15 +136,11 @@ def activate(activation_no, type_l):
                         c.renovating = True
                         broadcast(owner.name + " started renovating " + c.name)
                     case "GRANT":
-                        owner.flags = owner.flags + act[1:]
+                        owner.grant(act[1:])
                         broadcast(owner.name + " got flag(s): " + ", ".join(act[1:]) + " with the " + c.name)
                     case "REVOKE":
-                        f = []
-                        for flag in act[1:]:
-                            if flag in owner.flags:
-                                owner.flags.remove(flag)
-                                f.append(flag)
-                        broadcast(owner.name + " lost flag(s): " + ", ".join(f) + " with the " + c.name)
+                        owner.revoke(act[1:])
+                        broadcast(owner.name + " possibly lost flag(s): " + ", ".join(act[1:]) + " with the " + c.name)
                     case _:
                         invalid_action(c.name, action)
 

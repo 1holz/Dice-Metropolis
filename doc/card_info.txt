@@ -72,7 +72,8 @@ actions:
 A machine readable list of string which specifies what actions will be excuted
 by this card. 
 Possible options (WIP):
-- BANK int|"inv": Player recieves int coins from the bank
+- GET int|"inv": Player recieves int coins from the bank
+- LOSE int|"inv"|"all": Loses the specified amount
 - STEAL int|"inv"|"all": Steals the specified amount from the active player
 - COMBO str int: Player gets int coins for each card with str icon
 - RENOVATE: Sets this card to renovating
