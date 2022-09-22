@@ -35,12 +35,13 @@ class Player:
                         case "REVOKE":
                             self.revoke(act[1:])
 
-    def grant(flags):
+    def grant(self, flags):
         for flag in flags:
             f = flag.split("-")
             match f[0].lower():
                 case "dice":
-                    util.out("WIP")
+                    if f[1].lower() not in self.dice_modes:
+                        self.dice_modes.append(f[1].lower())
                 case "roll":
                     util.out("WIP")
                 case "buff":
@@ -54,12 +55,13 @@ class Player:
                 case _:
                     util.out("Flag " + flag + " is unavailabel and cannot be granted")
 
-    def revoke(flags):
+    def revoke(self, flags):
         for flag in flags:
             f = flag.split("-")
             match f[0].lower():
                 case "dice":
-                    util.out("WIP")
+                    if f[1].lower() in self.dice_modes:
+                        self.dice_modes.remove(f[1].lower())
                 case "roll":
                     util.out("WIP")
                 case "buff":
@@ -78,7 +80,7 @@ class Player:
         info.append(("name", util.align("Name"), self.name, ))
         info.append(("money", util.align("Money"), self.money, ))
         info.append(("landmark_amount", util.align("Landmarks"), self.landmarks, ))
-        info.append(("flags", util.align("Flags"), self.flags, ))
+        #info.append(("flags", util.align("Flags"), self.flags, ))
         info.append(("cards", util.align("Cards"), len(self.cards)))
         for i in range(len(self.cards)):
             c = self.cards[i]

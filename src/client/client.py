@@ -58,15 +58,15 @@ def recieve(connection, package):
                 return False
             match package["phase"]:
                 case 1:
-                    util.out("Phase " + package["phase"]) # WIP
+                    util.out("You can now choose the dice mode you want to use")
                 case 2:
-                    util.out("Phase " + package["phase"]) # WIP
+                    util.out("Phase " + str(package["phase"])) # WIP
                 case 3:
                     util.out("You can now buy a card")
                 case 4:
-                    util.out("Phase " + package["phase"]) # WIP
+                    util.out("Phase " + str(package["phase"])) # WIP
                 case _:
-                    error("Phase " + package["phase"] + " is invalid")
+                    error("Phase " + str(package["phase"]) + " is invalid")
         case "PRINT":
             if "msg" in package:
                 util.out(str(package["msg"]))

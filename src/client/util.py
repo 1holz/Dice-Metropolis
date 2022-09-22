@@ -12,7 +12,7 @@ def ask(question, regex):
             out("Your answer was invalid. Please try again.")
 
 def multi_out(list):
-    out("=========================")
+    out("==============================")
     for e in list:
         out(e)
 

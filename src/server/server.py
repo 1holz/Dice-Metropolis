@@ -62,16 +62,16 @@ def gen_info():
     info.append(("cards", util.align("Cards"), len(cards)))
     for i in range(len(cards)):
         c = cards[i]
-        info.append(("card" + str(i), "{:<30} Index: {:>3}, Availabel: {:>3}", c.name, i, c.availabel, ))
+        info.append(("card" + str(i), "[{:>3}] {:<30} Availabel: {:>3}", i, c.name, c.availabel, ))
     return info
 
 def transactions(activation_no):
     broadcast(players[0].name + " rolled a " + str(activation_no))
-    activate(activation_no, lambda type : type != "Restaurants")
-    activate(activation_no, lambda type : type == "Restaurants" or type == "Major Establishment")
-    activate(activation_no, lambda type : type != "Major Establishment")
+    activate_all(activation_no, lambda type : type != "Restaurants")
+    activate_all(activation_no, lambda type : type == "Restaurants" or type == "Major Establishment")
+    activate_all(activation_no, lambda type : type != "Major Establishment")
 
-def activate(activation_no, type_l):
+def activate_all(activation_no, type_l):
     active_player = players[0]
     for i in range(len(players)):
         owner = players[i]
@@ -148,13 +148,14 @@ def invalid_action(name, action):
     util.out(name + " contains invalid action " + action)
 
 def communicate():
+    global phase
+    players[0].phase(phase)
     while True:
         for p in players[:]:
             if p.closed:
                 continue
             try:
                 if p.connection.poll(float(config["sync_interval"])) and handle_package(p.connection.recv(), p):
-                    global phase
                     phase = 0
                     break
             except EOFError as e:
@@ -263,17 +264,17 @@ def run():
         if len(players) == 0:
             break
         phase = 0
-                                            # dice mode?
-        #if communicate():                  # phase 1
-        #    continue
-        dice_roll = dice.roll_1()
+        if len(players[0].dice_modes) > 1:
+            phase = 1 # Choose dice
+            if communicate():
+                continue
+        dice_roll = dice.roll("1")
                                             # add 2?
                                             # reroll?
         #if communicate():                  # phase 2
         #    continue
         transactions(dice_roll)
         phase = 3 # buy
-        players[0].phase(phase)
         if communicate():
             continue
                                             # invest

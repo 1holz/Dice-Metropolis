@@ -2,7 +2,7 @@ import re
 
 def infos_out(list):
     new_list = []
-    out("=========================")
+    out("==============================")
     for t in list:
         out(t[1].format(t[2:]))
 
