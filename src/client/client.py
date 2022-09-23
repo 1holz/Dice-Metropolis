@@ -98,6 +98,11 @@ def send(connection, in_str):
                 connection.send({"type": "INFO", "player": com[1][0].lower() == "p", "src": com[2]})
             else:
                 connection.send({"type": "INFO"})
+        case "DICE":
+            if len(com) > 1:
+                connection.send({"type": "DICE", "mode": com[1]})
+            else:
+                error("Dice mode was not specified")
         case "BUY":
             if len(com) > 1:
                 connection.send({"type": "BUY", "card": com[1]})

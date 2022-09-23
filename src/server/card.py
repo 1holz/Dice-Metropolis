@@ -14,7 +14,7 @@ def from_dct(dct):
         dct.get("type", "Secondary Industry"),
         dct.get("icon", ""), dct.get("activation_no", []),
         dct.get("activation", "self"), dct.get("cost", 1),
-        dct.get("start", 0), dct.get("availabel", 2),
+        dct.get("start", 0), dct.get("available", 2),
         dct.get("actions", []), dct.get("investable", 0))
 
 def error(name, param):
@@ -29,14 +29,14 @@ class Card:
     activation = ""
     cost = 1
     start = 0
-    availabel = 2
+    available = 2
     actions = []
     investable = 0
     renovating = False
     investment = 0
 
     def __init__(self, name, desc, type, icon, activation_no, activation, cost,
-        start, availabel, actions, investable):
+        start, available, actions, investable):
         self.name = name
         self.desc = desc
         self.type = type
@@ -47,11 +47,11 @@ class Card:
             self.icon = "bread"
         self.activation_no = activation_no
         self.activation = activation.lower()
-        if self.activation not in ["passiv", "self", "others", "all"] or self.activation != activation:
+        if self.activation not in ["passive", "self", "others", "all"] or self.activation != activation:
             error(self.name, "activation")
-        if self.activation not in ["passiv", "self", "others", "all"]:
+        if self.activation not in ["passive", "self", "others", "all"]:
             if type == "Landmark":
-                self.activation = "passiv"
+                self.activation = "passive"
             if type == "Primary Industry":
                 self.activation = "all"
             if type == "Restaurants":
@@ -63,16 +63,16 @@ class Card:
         if self.start > 1 and self.icon == "tower":
             error(self.name, "start")
             self.start = 1
-        if availabel + self.start != 1 and self.icon == "tower":
-            error(self.name, "availabel")
-            availabel = 1 - self.start
-        self.availabel = availabel * player_amount
+        if available + self.start != 1 and self.icon == "tower":
+            error(self.name, "available")
+            available = 1 - self.start
+        self.available = available * player_amount
         self.actions = actions
         self.investable = investable
 
     def get_copy(self):
         new = copy.deepcopy(self)
-        new.availabel = 0
+        new.available = 0
         return new
 
     def gen_info(self):
@@ -85,7 +85,7 @@ class Card:
         info.append(("activation", util.align("Activation mode"), self.activation, ))
         info.append(("cost", util.align("Cost"), self.cost, ))
         info.append(("start", util.align("Start"), self.start, ))
-        info.append(("availabel", util.align("Availabel"), self.availabel, ))
+        info.append(("available", util.align("Available"), self.available, ))
         info.append(("investable", util.align("Investable"), self.investable, ))
         info.append(("actions", "", self.actions, ))
         return info

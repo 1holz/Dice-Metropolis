@@ -62,7 +62,7 @@ def gen_info():
     info.append(("cards", util.align("Cards"), len(cards)))
     for i in range(len(cards)):
         c = cards[i]
-        info.append(("card" + str(i), "[{:>3}] {:<30} Availabel: {:>3}", i, c.name, c.availabel, ))
+        info.append(("card" + str(i), "[{:>3}] {:<30} Available: {:>3}", i, c.name, c.available, ))
     return info
 
 def transactions(activation_no):
@@ -77,7 +77,7 @@ def activate_all(activation_no, type_l):
         owner = players[i]
         for c in players[i].cards:
             if (type_l(c.type) or activation_no not in c.activation_no or
-                c.activation == "passiv" or c.activation == "self" and i > 0 or
+                c.activation == "passive" or c.activation == "self" and i > 0 or
                 c.activation == "others" and i == 0):
                 continue
             if c.renovating:
@@ -201,16 +201,24 @@ def handle_package(package, player):
             else:
                 e = from_list(players if package["player"] else cards, package["src"])
                 if e is None:
-                    player.error("The source " + str(package["src"]) + " is unavailabel for " + "players" if package["player"] else "cards")
+                    player.error("The source " + str(package["src"]) + " is unavailable for " + "players" if package["player"] else "cards")
                     return False
                 player.prints(e.gen_info())
+        case "DICE":
+            if "mode" not in package:
+                player.error("The mode argument was not supplied")
+                return False
+            if package["mode"] not in player.dice_modes:
+                player.error("The dice mode " + str(package["mode"]) + " is unavailable to you")
+                return False
+            player.dice_mode = package["mode"]
         case "BUY":
             if "card" not in package:
                 broadcast(player.name + " skipped buying")
                 return True
             c = from_list(cards, package["card"])
             if c is None:
-                player.error("The card " + str(package["card"]) + " is unavailabel")
+                player.error("The card " + str(package["card"]) + " is unavailable")
                 return False
             if player != players[0]:
                 player.error("Only the active player can buy cards")
@@ -219,8 +227,8 @@ def handle_package(package, player):
             if phase != 3:
                 player.error("You can only buy during the buy phase")
                 return False
-            if c.availabel < 1:
-                player.error(c.name + " is nolonger availabel")
+            if c.available < 1:
+                player.error(c.name + " is nolonger available")
                 return False
             if player.money < c.cost:
                 player.error(c.name + " is to expensive. You are missing " + str(c.cost - player.money) + " coin(s)")
@@ -232,7 +240,7 @@ def handle_package(package, player):
                         return False
             player.money -= c.cost
             player.receive_card(c)
-            c.availabel -= 1
+            c.available -= 1
             broadcast(player.name + " bought " + c.name)
             return True
         case _:
@@ -258,6 +266,7 @@ def start():
 def run():
     global landmark_amount
     global phase
+    repeats = 0
     while True:
         if players[0].closed:
             players.remove(players[0])
@@ -268,12 +277,18 @@ def run():
             phase = 1 # Choose dice
             if communicate():
                 continue
-        dice_roll = dice.roll("1")
+        dice_mode = players[0].dice_mode
+        if len(players[0].dice_modes) == 1:
+            dice_mode = players[0].dice_modes[0]
+        dice_roll = dice.roll(dice_mode, players[0])
                                             # add 2?
                                             # reroll?
         #if communicate():                  # phase 2
         #    continue
-        transactions(dice_roll)
+        broadcast(players[0].name + " rolled a " + str(sum(dice_roll)) + " with the combination " + ", ".join(list(map(str, dice_roll))))
+        transactions(sum(dice_roll))
+        if players[0].money < players[0].min_money:
+            players[0].money = players[0].min_money
         phase = 3 # buy
         if communicate():
             continue
@@ -284,9 +299,10 @@ def run():
             broadcast(players[0].name + " has won the game")
             close(players[0])
         else:
-            if False: #                     check double
-                pass
+            if players[0].double_repeats > repeats:
+                repeats += 1
             else:
+                repeats = 0
                 players.append(players.pop(0))
 
 def from_list(list, element):

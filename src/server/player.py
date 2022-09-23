@@ -8,9 +8,10 @@ class Player:
     cards = []
     landmarks = 0
     closed = False
+    dice_mode = "1"
     # flags:
-    dice_modes = ["1"]
-    roll_manipulation = []
+    dice_modes = [dice_mode]
+    roll_mods = []
     buffs = []
     double_repeats = 0
     min_money = 0
@@ -26,7 +27,7 @@ class Player:
             self.landmarks += 1
         for i in range(amount):
             self.cards.append(card.get_copy())
-            if card.activation == "passiv":
+            if card.activation == "passive":
                 for action in card.actions:
                     act = action.split()
                     match act[0]:
@@ -53,7 +54,7 @@ class Player:
                 case "skip":
                     util.out("WIP")
                 case _:
-                    util.out("Flag " + flag + " is unavailabel and cannot be granted")
+                    util.out("Flag " + flag + " is unavailable and cannot be granted")
 
     def revoke(self, flags):
         for flag in flags:
@@ -73,14 +74,20 @@ class Player:
                 case "skip":
                     util.out("WIP")
                 case _:
-                    util.out("Flag " + flag + " is unavailabel and cannot be revoked")
+                    util.out("Flag " + flag + " is unavailable and cannot be revoked")
 
     def gen_info(self):
         info = []
         info.append(("name", util.align("Name"), self.name, ))
         info.append(("money", util.align("Money"), self.money, ))
         info.append(("landmark_amount", util.align("Landmarks"), self.landmarks, ))
-        #info.append(("flags", util.align("Flags"), self.flags, ))
+        info.append(("dice_mode", util.align("Last dice mode"), self.dice_mode, ))
+        info.append(("dice_modes", util.align("Owned dice modes"), self.dice_modes, ))
+        info.append(("roll_mods", util.align("Owned roll mods"), self.roll_mods, ))
+        info.append(("buffs", util.align("Owned buffs"), self.buffs, ))
+        info.append(("double_repeats", util.align("Double Repeats"), self.double_repeats, ))
+        info.append(("min_money", util.align("Minimum money"), self.min_money, ))
+        info.append(("skip_compensation", util.align("Skip Compensation"), self.skip_compensation, ))
         info.append(("cards", util.align("Cards"), len(self.cards)))
         for i in range(len(self.cards)):
             c = self.cards[i]
