@@ -65,12 +65,6 @@ def gen_info():
         info.append(("card" + str(i), "[{:>3}] {:<30} Available: {:>3}", i, c.name, c.available, ))
     return info
 
-def transactions(activation_no):
-    broadcast(players[0].name + " rolled a " + str(activation_no))
-    activate_all(activation_no, lambda type : type != "Restaurants")
-    activate_all(activation_no, lambda type : type == "Restaurants" or type == "Major Establishment")
-    activate_all(activation_no, lambda type : type != "Major Establishment")
-
 def activate_all(activation_no, type_l):
     active_player = players[0]
     for i in range(len(players)):
@@ -166,6 +160,7 @@ def communicate():
     return players[0].closed
 
 def handle_package(package, player):
+    global phase
     match package["type"].upper():
         case "PING":
             player.pong()
@@ -212,23 +207,25 @@ def handle_package(package, player):
                 player.error("The dice mode " + str(package["mode"]) + " is unavailable to you")
                 return False
             player.dice_mode = package["mode"]
+            if player == players[0] and phase == 1:
+                return True
         case "BUY":
+            if player != players[0]:
+                player.error("Only the active player can buy cards")
+                return False
+            if phase != 3:
+                player.error("You can only buy during the buy phase")
+                return False
             if "card" not in package:
-                broadcast(player.name + " skipped buying")
+                broadcast(player.name + " skipped buying and received " + player.skip_compensation + " coin(s) of skip compensation")
+                player.money += player.skip_compensation
                 return True
             c = from_list(cards, package["card"])
             if c is None:
                 player.error("The card " + str(package["card"]) + " is unavailable")
                 return False
-            if player != players[0]:
-                player.error("Only the active player can buy cards")
-                return False
-            global phase
-            if phase != 3:
-                player.error("You can only buy during the buy phase")
-                return False
             if c.available < 1:
-                player.error(c.name + " is nolonger available")
+                player.error(c.name + " is no longer available")
                 return False
             if player.money < c.cost:
                 player.error(c.name + " is to expensive. You are missing " + str(c.cost - player.money) + " coin(s)")
@@ -285,10 +282,14 @@ def run():
                                             # reroll?
         #if communicate():                  # phase 2
         #    continue
-        broadcast(players[0].name + " rolled a " + str(sum(dice_roll)) + " with the combination " + ", ".join(list(map(str, dice_roll))))
-        transactions(sum(dice_roll))
+        broadcast(players[0].name + " rolled a " + str(sum(dice_roll)) + " with the combination " + ", ".join([str(i) for i in dice_roll]))
+        activate_all(sum(dice_roll), lambda type : type != "Restaurants")
+        activate_all(sum(dice_roll), lambda type : type == "Restaurants" or type == "Major Establishment")
+        activate_all(sum(dice_roll), lambda type : type != "Major Establishment")
         if players[0].money < players[0].min_money:
+            broadcast(players[0].name + " got " + str(players[0].min_money - players[0].money) + " coin(s) of minimum money")
             players[0].money = players[0].min_money
+        players[0].print("You have " + str(players[0].money) + " coin(s)")
         phase = 3 # buy
         if communicate():
             continue
@@ -301,6 +302,7 @@ def run():
         else:
             if players[0].double_repeats > repeats:
                 repeats += 1
+                players[0].print("You got an additional turn due to rolling a double. Remaining double repeats: " + str(players[0].double_repeats - repeats))
             else:
                 repeats = 0
                 players.append(players.pop(0))
@@ -316,7 +318,7 @@ def from_list(list, element):
             for e in list:
                 if e.name == element:
                     return e
-                return None
+            return None
 
 def finish():
     for p in players:

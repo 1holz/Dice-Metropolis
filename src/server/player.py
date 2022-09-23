@@ -41,18 +41,27 @@ class Player:
             f = flag.split("-")
             match f[0].lower():
                 case "dice":
-                    if f[1].lower() not in self.dice_modes:
+                    if len(f) > 1 and f[1].lower() not in self.dice_modes:
                         self.dice_modes.append(f[1].lower())
                 case "roll":
                     util.out("WIP")
                 case "buff":
                     util.out("WIP")
-                case "double_repeats":
-                    util.out("WIP")
+                case "repeats":
+                    if len(f) > 1 and f[1].isdigit():
+                        self.double_repeats += int(f[1])
+                    else:
+                        util.out("Cannot grant invalid repeats flag " + flag)
                 case "min":
-                    util.out("WIP")
+                    if len(f) > 1 and f[1].isdigit():
+                        self.min_money += int(f[1])
+                    else:
+                        util.out("Cannot grant invalid min money flag " + flag)
                 case "skip":
-                    util.out("WIP")
+                    if len(f) > 1 and f[1].isdigit():
+                        self.skip_compensation += int(f[1])
+                    else:
+                        util.out("Cannot grant invalid skip compensation flag " + flag)
                 case _:
                     util.out("Flag " + flag + " is unavailable and cannot be granted")
 
@@ -61,18 +70,27 @@ class Player:
             f = flag.split("-")
             match f[0].lower():
                 case "dice":
-                    if f[1].lower() in self.dice_modes:
+                    if len(f) > 1 and f[1].lower() in self.dice_modes:
                         self.dice_modes.remove(f[1].lower())
                 case "roll":
                     util.out("WIP")
                 case "buff":
                     util.out("WIP")
-                case "double_repeats":
-                    util.out("WIP")
+                case "repeats":
+                    if len(f) > 1 and f[1].isdigit():
+                        self.double_repeats -= int(f[1])
+                    else:
+                        util.out("Cannot revoke invalid repeats flag " + flag)
                 case "min":
-                    util.out("WIP")
+                    if len(f) > 1 and f[1].isdigit():
+                        self.min_money -= int(f[1])
+                    else:
+                        util.out("Cannot revoke invalid min money flag " + flag)
                 case "skip":
-                    util.out("WIP")
+                    if len(f) > 1 and f[1].isdigit():
+                        self.skip_compensation -= int(f[1])
+                    else:
+                        util.out("Cannot revoke invalid skip compensation flag " + flag)
                 case _:
                     util.out("Flag " + flag + " is unavailable and cannot be revoked")
 
