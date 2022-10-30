@@ -130,4 +130,5 @@ dmypy.json
 .pyre/
 
 # CUSTOM
-/src/server/cards/*
+src/server/cards/*.json
+src/server/cards/*/todo.txt
