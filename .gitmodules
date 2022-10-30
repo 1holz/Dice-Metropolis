@@ -1,0 +1,3 @@
+[submodule "src/server/cards"]
+	path = src/server/cards
+	url = https://github.com/Albert-Einholz/Dice-Metropolis-Card-Packs
