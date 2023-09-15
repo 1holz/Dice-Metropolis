@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import util
 from card import Card
 
@@ -21,7 +23,7 @@ class Player:
         self.name = "Dummy" + str(id)
         self.money = money
         self.connection = connection
-    
+
     def receive_card(self, card, amount = 1):
         if card.type == "Landmark":
             self.landmarks += 1
@@ -118,7 +120,7 @@ class Player:
             tupel = tupel + (string, c.name, c.investment, c.renovating)
             info.append(tupel)
         return info
-    
+
     def send(self, package):
         if self.closed:
             return

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import card
 import dice
 import json
@@ -56,7 +58,7 @@ def gen_info():
     info.append(("players", util.align("Players"), len(players), ))
     for i in range(len(players)):
         p = players[i]
-        info.append(("player" + str(i), "{:<30} Landmarks: {:>3}, Money: {:>3}", p.name,
+        info.append(("player" + str(i), "- {:<30} Landmarks: {:>3}, Money: {:>3}", p.name,
             p.landmarks, p.money, ))
     info.append(("landmark_amount", util.align("Landmark amount"), landmark_amount, ))
     info.append(("cards", util.align("Cards"), len(cards)))

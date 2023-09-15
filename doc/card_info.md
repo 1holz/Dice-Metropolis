@@ -13,7 +13,7 @@ The type of the card as a string. The original game supports:
 - "Primary Industry"
 - "Secondary Industry"
 - "Restaurants"
-- "Major Establishment"  
+- "Major Establishment"
 Custom types can be added. When a player has build all "Landmarks" the player wins. "Restaurants" are executed first, "Major Establishment" last and all others in between. The default is "Secondary Industry".
 
 ### icon
@@ -27,7 +27,7 @@ The icon of the card as a string. The original game supports:
 - "fruit"
 - "cup"
 - "boat"
-- "suitcase"  
+- "suitcase"
 Custom icons can be added. These must not contain whitespaces. Whitespaces will be removed. Every player can only own every "tower" card once. "tower" cards can't be swaped, moved or get renovated. Cannot be empty. The default is bread.
 
 ### activation_no
@@ -48,7 +48,7 @@ The amount of money needed to buy this card as in int. The default is 1.
 How many of these cards every player gets at the start of the game as an int. Usually will be 0 for most cards and 1 for some cards. The default is 0. Has to be 1 or 0 for "tower" cards.
 
 ### available
-A float that is multiplied with the amount of players to specify how many of these cards are available to buy. The default is 2. For "tower" cards this will be overwritten with 1. The starting cards do not count to this limit except for Tower cards.
+A float that is multiplied with the amount of players to specify how many of these cards are available to buy. The default is 2. For "tower" cards this will be overwritten with 1. The starting cards do not count to this limit except for "tower" cards.
 
 ### actions
 A machine readable list of strings which specify what actions will be executed by this card.  Possible options (WIP):
